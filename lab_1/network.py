@@ -39,83 +39,142 @@ class Network(object):
                 for line in input_file:
                     if line.lstrip().startswith('#'):
                         continue
+
                     elif line.lstrip().startswith(('WEZLY', 'LACZA')):
                         try:
                             current = line.split('=')[0].strip(' \n')
                         except TypeError:
                             print('Matched string in WEZLY is not an int!')
+
                     elif line.lstrip().startswith('ALGORYTM'):
                         current = 'ALGORYTM'
                         self.algorithm = line.split('=')[-1].strip(' \n')
                     else:
                         if current == 'WEZLY':
-                            params = [int(p.strip(' \n')) for p in line.split(' ')]
+                            params = [int(p.strip(' \n'))
+                                      for p in line.split(' ')]
+
                             self.nodes.append(Node(*params))
                         elif current == 'LACZA':
-                            params = [int(p.strip(' \n')) for p in line.split(' ')]
+                            params = [int(p.strip(' \n'))
+                                      for p in line.split(' ')]
+
                             self.edges.append(Edge(*params))
                         else:
-                            params = [int(p.strip(' \n')) for p in line.split(' ')]
-                            self.nodes_to_compute.append((params[0], params[1]))
+                            params = [int(p.strip(' \n'))
+                                      for p in line.split(' ')]
+
+                            self.nodes_to_compute.append((params[0],
+                                                          params[1]))
         except FileNotFoundError:
             print('No file called "input.txt" found!')
 
     def compute_weights(self):
         for x, edge in enumerate(self.edges):
-            edge.weight = pythagoras(self.nodes[edge.start_node - 1].x - self.nodes[edge.end_node - 1].x,
-                                     self.nodes[edge.start_node - 1].y - self.nodes[edge.end_node - 1].y)
-            # print(f'{x+1:2}. {edge.weight:.2f}')  # f-string formatting
+            edge.weight = pythagoras(self.nodes[edge.start_node - 1].x
+                                     - self.nodes[edge.end_node - 1].x,
+
+                                     self.nodes[edge.start_node - 1].y
+                                     - self.nodes[edge.end_node - 1].y)
 
     def find_connection(self, start, goal):
         for edge in self.edges:
-            if int(edge.start_node) == int(start) and int(edge.end_node) == int(goal):
+            if (int(edge.start_node) == int(start)
+                    and int(edge.end_node) == int(goal)):
                 return edge.id_no
             # delete it when you need directed connections
-            elif int(edge.end_node) == int(start) and int(edge.start_node) == int(goal):
+
+            elif int(edge.end_node) == int(start) \
+                    and int(edge.start_node) == int(goal):
                 return edge.id_no
+
         return 0
 
     def draw(self, edges, nodes):
         for edge in edges:
-            plt.plot([self.nodes[edge.start_node - 1].x, self.nodes[edge.end_node - 1].x],
-                     [self.nodes[edge.start_node - 1].y, self.nodes[edge.end_node - 1].y],
+            plt.plot([self.nodes[edge.start_node - 1].x,
+                     self.nodes[edge.end_node - 1].x],
+                     [self.nodes[edge.start_node - 1].y,
+                     self.nodes[edge.end_node - 1].y],
                      'mediumorchid')
-            plt.text((self.nodes[edge.start_node - 1].x + self.nodes[edge.end_node - 1].x) / 2,
-                     (self.nodes[edge.start_node - 1].y + self.nodes[edge.end_node - 1].y) / 2,
-                     edge.weight,  bbox=dict(boxstyle="round4,pad=0.3", fc='lightskyblue', alpha=0.5), fontsize=8)
+
+            plt.text((self.nodes[edge.start_node - 1].x
+                      + self.nodes[edge.end_node - 1].x) / 2,
+                     (self.nodes[edge.start_node - 1].y
+                      + self.nodes[edge.end_node - 1].y) / 2,
+                     edge.weight,
+                     bbox=dict(boxstyle='round4, pad=0.3',
+                               fc='lightskyblue',
+                               alpha=0.5),
+                     fontsize=8)
+
         for node in nodes:
-            plt.text(node.x, node.y, node.id_no, bbox=dict(boxstyle="circle,pad=0.3", fc="pink"), fontsize=12)
+            plt.text(node.x,
+                     node.y,
+                     node.id_no,
+                     bbox=dict(boxstyle="circle, pad=0.3",
+                               fc="pink"),
+                     fontsize=12)
+
         plt.show()
 
     def draw_path(self, path):
         nodes = []
         edges = []
+
         for elements in path:
             nodes.append(self.nodes[int(elements) - 1])
+
         for i in range(nodes.__len__() - 1):
-            edges.append(self.edges[self.find_connection(nodes[i].id_no, nodes[i + 1].id_no) - 1])
+            edges.append(self.edges[self.find_connection(nodes[i].id_no,
+                                                         nodes[i + 1].id_no)
+                                    - 1])
+
         self.draw(edges, nodes)
 
     def draw_graph_and_path(self, path):
         path_edges = []
         path_nodes = []
+
         for elements in path:
             path_nodes.append(self.nodes[int(elements) - 1])
+
         for i in range(path_nodes.__len__() - 1):
-            path_edges.append(self.edges[self.find_connection(path_nodes[i].id_no, path_nodes[i + 1].id_no) - 1])
+            path_edges.append(
+                    self.edges[self.find_connection(path_nodes[i].id_no,
+                                                    path_nodes[i + 1].id_no)
+                               - 1])
         for edge in self.edges:
-            plt.plot([self.nodes[edge.start_node - 1].x, self.nodes[edge.end_node - 1].x],
-                     [self.nodes[edge.start_node - 1].y, self.nodes[edge.end_node - 1].y],
+            plt.plot([self.nodes[edge.start_node - 1].x,
+                     self.nodes[edge.end_node - 1].x],
+                     [self.nodes[edge.start_node - 1].y,
+                     self.nodes[edge.end_node - 1].y],
                      'mediumorchid')
+
         for edge in path_edges:
-            plt.plot([self.nodes[edge.start_node - 1].x, self.nodes[edge.end_node - 1].x],
-                     [self.nodes[edge.start_node - 1].y, self.nodes[edge.end_node - 1].y],
+            plt.plot([self.nodes[edge.start_node - 1].x,
+                     self.nodes[edge.end_node - 1].x],
+                     [self.nodes[edge.start_node - 1].y,
+                     self.nodes[edge.end_node - 1].y],
                      'springgreen')
-            plt.text((self.nodes[edge.start_node - 1].x + self.nodes[edge.end_node - 1].x) / 2,
-                     (self.nodes[edge.start_node - 1].y + self.nodes[edge.end_node - 1].y) / 2,
-                     edge.weight, bbox=dict(boxstyle="round4,pad=0.3",fc='lightskyblue', alpha=0.5), fontsize=10)
+
+            plt.text((self.nodes[edge.start_node - 1].x
+                      + self.nodes[edge.end_node - 1].x) / 2,
+                     (self.nodes[edge.start_node - 1].y
+                      + self.nodes[edge.end_node - 1].y) / 2,
+                     edge.weight,
+                     bbox=dict(boxstyle='round4, pad=0.3',
+                               fc='lightskyblue',
+                               alpha=0.5),
+                     fontsize=10)
+
         for node in self.nodes:
-            plt.text(node.x, node.y, node.id_no, bbox=dict(boxstyle="circle,pad=0.3", fc="pink"), fontsize=12)
+            plt.text(node.x,
+                     node.y,
+                     node.id_no,
+                     bbox=dict(boxstyle='circle, pad=0.3',
+                               fc='pink'),
+                     fontsize=12)
         plt.show()
 
     def compute_graph(self):
@@ -124,8 +183,10 @@ class Network(object):
             for edge in self.edges:
                 if node.id_no == edge.start_node:
                     tmp_dict[str(edge.end_node)] = edge.weight
+
                 elif node.id_no == edge.end_node:
                     tmp_dict[str(edge.start_node)] = edge.weight
+
             self.graph[str(node.id_no)] = tmp_dict.copy()
             tmp_dict.clear()
 
@@ -136,25 +197,32 @@ class Network(object):
         unseen_nodes = self.graph
         infinity = inf
         path = []
+
         for node in unseen_nodes:
             shortest_distance[node] = infinity
         shortest_distance[start] = 0
 
         while unseen_nodes:
             min_node = None
+
             for node in unseen_nodes:
                 if min_node is None:
                     min_node = node
+
                 elif shortest_distance[node] < shortest_distance[min_node]:
                     min_node = node
 
             for edge, weight in self.graph[min_node].items():
-                if weight + shortest_distance[min_node] < shortest_distance[edge]:
-                    shortest_distance[edge] = weight + shortest_distance[min_node]
+                if weight + shortest_distance[min_node] \
+                        < shortest_distance[edge]:
+                    shortest_distance[edge] \
+                        = weight + shortest_distance[min_node]
                     predecessor[edge] = min_node
+
             unseen_nodes.pop(min_node)
 
         current_node = goal
+
         while current_node != start:
             try:
                 path.insert(0, current_node)
@@ -162,6 +230,7 @@ class Network(object):
             except KeyError:
                 print('Path not reachable')
                 break
+
         path.insert(0, start)
         if shortest_distance[goal] != infinity:
             print('Shortest distance is ' + str(shortest_distance[goal]))
@@ -174,14 +243,17 @@ class Network(object):
         graph = []
         edges_mst = []
         total_weight = 0
+
         for edge in self.edges:
             graph.append([edge.start_node - 1, edge.end_node - 1, edge.weight])
+
         adj_matrix = create_adj_matrix(v, graph)
         vertex = 0
         mst = []
         edges = []
         visited = []
         min_edge = [None, None, float('inf')]
+
         while len(mst) != v - 1:
 
             # mark this vertex as visited
@@ -211,7 +283,6 @@ class Network(object):
             j = self.find_connection(i[0] + 1, i[1] + 1) - 1
             edges_mst.append(self.edges[j])
             total_weight += self.edges[j].weight
-        print(f"Total weight of the edges in minimum spanning tree: {total_weight}")
+        print(f'Total weight of the edges in minimum spanning tree: \
+              {total_weight}')
         self.draw(edges_mst, self.nodes)
-
-
